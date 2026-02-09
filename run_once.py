@@ -61,25 +61,21 @@ def fetch_gold_price(logger: logging.Logger) -> Optional[Dict[str, Any]]:
     except Exception as e:
         logger.warning(f"数据源1失败: {e}")
 
-    # 数据源2：使用金价查询接口
+    # 数据源2：通过美元金价 + 汇率计算（frankfurter.app 免费无限次）
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-        url = 'https://api.jisuapi.com/gold/shanghai?appkey=free'
-        resp = requests.get(url, headers=headers, timeout=15)
-        if resp.status_code == 200:
-            data = resp.json()
-            if data.get('status') == 0 and data.get('result'):
-                for item in data['result']:
-                    if 'AU9999' in item.get('name', '').upper():
-                        price = float(item['price'])
-                        logger.info(f"数据源2获取成功: {price} 元/克")
-                        return {
-                            'price': price,
-                            'source': 'jisuapi',
-                            'timestamp': datetime.now().isoformat()
-                        }
+        # 获取 XAU/USD 价格
+        resp1 = requests.get('https://api.frankfurter.app/latest?from=XAU&to=USD,CNY', timeout=15)
+        if resp1.status_code == 200:
+            data = resp1.json()
+            if 'rates' in data and 'CNY' in data['rates']:
+                cny_per_oz = data['rates']['CNY']
+                cny_per_gram = round(cny_per_oz / 31.1035, 2)
+                logger.info(f"数据源2获取成功: {cny_per_gram} 元/克")
+                return {
+                    'price': cny_per_gram,
+                    'source': 'frankfurter',
+                    'timestamp': datetime.now().isoformat()
+                }
     except Exception as e:
         logger.warning(f"数据源2失败: {e}")
 
