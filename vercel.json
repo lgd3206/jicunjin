@@ -1,0 +1,32 @@
+{
+  "buildCommand": "pip install -r requirements.txt",
+  "outputDirectory": ".",
+  "env": {
+    "EMAIL_TYPE": "@email_type",
+    "EMAIL_ADDRESS": "@email_address",
+    "APP_PASSWORD": "@app_password",
+    "RECIPIENT_EMAILS": "@recipient_emails",
+    "DROP_THRESHOLD_PERCENT": "5.0",
+    "ENABLE_EMAIL_NOTIFICATION": "true",
+    "TEST_MODE": "false",
+    "DATABASE_PATH": "gold_prices.db",
+    "LOG_LEVEL": "INFO",
+    "LOG_FILE": "logs/notifications.log"
+  },
+  "functions": {
+    "api/monitor.py": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/health.py": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1.py"
+    }
+  ]
+}
