@@ -39,41 +39,42 @@ def fetch_gold_price(logger: logging.Logger) -> Optional[Dict[str, Any]]:
     Returns:
         {'price': float, 'source': str, 'timestamp': str} 或 None
     """
-    # 数据源1：韩国金价API（免费，无需key）
+    # 数据源1：gold-api.com（免费，无需key，返回美元/盎司）+ exchangerate汇率
     try:
-        url = 'https://api.exchangerate-api.com/v4/latest/XAU'
-        resp = requests.get(url, timeout=15)
+        # 获取金价（美元/盎司）
+        resp = requests.get('https://api.gold-api.com/price/XAU', timeout=15)
         if resp.status_code == 200:
-            data = resp.json()
-            # XAU 是以盎司计价，1盎司 = 31.1035克
-            # 转换为人民币/克
-            usd_per_oz = 1.0 / data['rates']['USD'] if 'USD' in data['rates'] else None
-            cny_rate = data['rates'].get('CNY')
-            if usd_per_oz and cny_rate:
-                cny_per_oz = usd_per_oz * cny_rate
-                cny_per_gram = round(cny_per_oz / 31.1035, 2)
-                logger.info(f"数据源1获取成功: {cny_per_gram} 元/克")
+            gold_data = resp.json()
+            usd_per_oz = gold_data.get('price')
+            if usd_per_oz:
+                # 获取美元兑人民币汇率
+                resp2 = requests.get('https://api.exchangerate-api.com/v4/latest/USD', timeout=15)
+                if resp2.status_code == 200:
+                    cny_rate = resp2.json()['rates'].get('CNY', 7.1)
+                else:
+                    cny_rate = 7.1  # 备用汇率
+                cny_per_gram = round(usd_per_oz * cny_rate / 31.1035, 2)
+                logger.info(f"数据源1获取成功: {cny_per_gram} 元/克 (金价${usd_per_oz}/oz, 汇率{cny_rate})")
                 return {
                     'price': cny_per_gram,
-                    'source': 'exchangerate-api',
+                    'source': 'gold-api',
                     'timestamp': datetime.now().isoformat()
                 }
     except Exception as e:
         logger.warning(f"数据源1失败: {e}")
 
-    # 数据源2：通过美元金价 + 汇率计算（frankfurter.app 免费无限次）
+    # 数据源2：metals.dev（免费，无需key）
     try:
-        # 获取 XAU/USD 价格
-        resp1 = requests.get('https://api.frankfurter.app/latest?from=XAU&to=USD,CNY', timeout=15)
-        if resp1.status_code == 200:
-            data = resp1.json()
-            if 'rates' in data and 'CNY' in data['rates']:
-                cny_per_oz = data['rates']['CNY']
-                cny_per_gram = round(cny_per_oz / 31.1035, 2)
+        resp = requests.get('https://api.metals.dev/v1/latest?api_key=demo&currency=CNY&unit=gram', timeout=15)
+        if resp.status_code == 200:
+            data = resp.json()
+            gold_price = data.get('metals', {}).get('gold')
+            if gold_price:
+                cny_per_gram = round(float(gold_price), 2)
                 logger.info(f"数据源2获取成功: {cny_per_gram} 元/克")
                 return {
                     'price': cny_per_gram,
-                    'source': 'frankfurter',
+                    'source': 'metals.dev',
                     'timestamp': datetime.now().isoformat()
                 }
     except Exception as e:
