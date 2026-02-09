@@ -1,0 +1,64 @@
+name: 积存金价格监控
+
+on:
+  # 每10分钟运行一次
+  schedule:
+    - cron: '*/10 * * * *'
+  # 支持手动触发
+  workflow_dispatch:
+    inputs:
+      manual_price:
+        description: '手动设置金价（测试用）'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 恢复历史价格数据
+        uses: actions/cache@v4
+        with:
+          path: price_history.json
+          key: gold-price-history
+          restore-keys: |
+            gold-price-history
+
+      - name: 运行金价监控
+        env:
+          EMAIL_TYPE: ${{ secrets.EMAIL_TYPE }}
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+          RECIPIENT_EMAILS: ${{ secrets.RECIPIENT_EMAILS }}
+          DROP_THRESHOLD_PERCENT: ${{ secrets.DROP_THRESHOLD_PERCENT }}
+          ENABLE_EMAIL_NOTIFICATION: ${{ secrets.ENABLE_EMAIL_NOTIFICATION }}
+          TEST_MODE: ${{ secrets.TEST_MODE }}
+          MANUAL_GOLD_PRICE: ${{ github.event.inputs.manual_price }}
+        run: python run_once.py
+
+      - name: 保存历史价格数据
+        if: always()
+        run: |
+          if [ -f price_history.json ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add price_history.json
+            git diff --cached --quiet || git commit -m "更新金价历史数据 $(date '+%Y-%m-%d %H:%M')"
+            git push
+          fi

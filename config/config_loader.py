@@ -40,31 +40,42 @@ class ConfigLoader:
         return '.env'
 
     def load_config(self):
-        """从 .env 文件加载配置"""
-        if not os.path.exists(self.env_path):
-            raise FileNotFoundError(f".env 文件不存在: {self.env_path}")
+        """从 .env 文件或环境变量加载配置"""
+        # 先尝试从 .env 文件加载
+        if os.path.exists(self.env_path):
+            with open(self.env_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
 
-        with open(self.env_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
+                    # 跳过空行和注释
+                    if not line or line.startswith('#'):
+                        continue
 
-                # 跳过空行和注释
-                if not line or line.startswith('#'):
-                    continue
+                    # 解析 KEY=VALUE
+                    if '=' in line:
+                        key, value = line.split('=', 1)
+                        key = key.strip()
+                        value = value.strip()
 
-                # 解析 KEY=VALUE
-                if '=' in line:
-                    key, value = line.split('=', 1)
-                    key = key.strip()
-                    value = value.strip()
+                        # 移除引号
+                        if value.startswith('"') and value.endswith('"'):
+                            value = value[1:-1]
+                        elif value.startswith("'") and value.endswith("'"):
+                            value = value[1:-1]
 
-                    # 移除引号
-                    if value.startswith('"') and value.endswith('"'):
-                        value = value[1:-1]
-                    elif value.startswith("'") and value.endswith("'"):
-                        value = value[1:-1]
+                        self.config[key] = value
 
-                    self.config[key] = value
+        # 环境变量优先级更高，覆盖 .env 文件中的值
+        env_keys = [
+            'EMAIL_TYPE', 'EMAIL_ADDRESS', 'APP_PASSWORD',
+            'RECIPIENT_EMAILS', 'DROP_THRESHOLD_PERCENT',
+            'ENABLE_EMAIL_NOTIFICATION', 'TEST_MODE',
+            'DATABASE_PATH', 'LOG_LEVEL', 'LOG_FILE'
+        ]
+        for key in env_keys:
+            value = os.environ.get(key)
+            if value is not None:
+                self.config[key] = value
 
     def get(self, key: str, default: Any = None) -> Any:
         """
