@@ -49,6 +49,8 @@ def fetch_bank_gold_prices(appkey: str, logger: logging.Logger) -> Optional[Dict
 
         if resp.status_code == 200:
             data = resp.json()
+            logger.info(f"极速数据API返回: {data}")  # 调试日志
+
             if data.get('status') == '0' and data.get('result'):
                 result = data['result']
                 banks = []
@@ -67,8 +69,11 @@ def fetch_bank_gold_prices(appkey: str, logger: logging.Logger) -> Optional[Dict
                     'banks': banks,
                     'timestamp': datetime.now().isoformat()
                 }
+            else:
+                logger.warning(f"API返回状态异常: status={data.get('status')}, msg={data.get('msg')}")
+                return None
 
-        logger.warning(f"极速数据API返回异常: {resp.status_code}")
+        logger.warning(f"极速数据API HTTP状态码异常: {resp.status_code}")
         return None
 
     except Exception as e:
