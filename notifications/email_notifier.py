@@ -121,6 +121,9 @@ class EmailNotifier:
         extremes = alert_result['extremes']
         price_diff = alert_result['price_diff']
 
+        # 获取银行金价（如果有）
+        bank_prices = alert_result.get('bank_prices', [])
+
         # 生成HTML内容
         html_content = f"""
         <html>
@@ -280,6 +283,8 @@ class EmailNotifier:
                             <h3>触发原因:</h3>
                             {''.join([f'<div class="reason-item">{reason}</div>' for reason in alert_result['alert_reasons']])}
                         </div>
+
+                        {'<div class="info-box" style="margin-top: 20px;"><h3 style="margin-top: 0; color: #667eea;">🏦 各大银行金价对比</h3><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background-color: #f0f0f0;"><th style="padding: 10px; text-align: left; border-bottom: 2px solid #667eea;">银行</th><th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">买入价(元/克)</th><th style="padding: 10px; text-align: right; border-bottom: 2px solid #667eea;">卖出价(元/克)</th></tr></thead><tbody>' + ''.join([f'<tr><td style="padding: 10px; border-bottom: 1px solid #eee;">{bank["bank_name"]}</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee; color: #4caf50; font-weight: bold;">{bank["buy_price"]:.2f}</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee; color: #f44336; font-weight: bold;">{bank["sell_price"]:.2f}</td></tr>' for bank in bank_prices]) + '</tbody></table><p style="font-size: 12px; color: #999; margin-top: 10px;">数据来源: 极速数据API | 更新时间: ' + (bank_prices[0]["update_time"] if bank_prices else "") + '</p></div>' if bank_prices else ''}
 
                         <div class="wechat-tip">
                             <strong>💡 微信实时接收提醒:</strong>

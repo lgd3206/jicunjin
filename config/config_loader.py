@@ -70,7 +70,8 @@ class ConfigLoader:
             'EMAIL_TYPE', 'EMAIL_ADDRESS', 'APP_PASSWORD',
             'RECIPIENT_EMAILS', 'DROP_THRESHOLD_PERCENT',
             'ENABLE_EMAIL_NOTIFICATION', 'TEST_MODE',
-            'DATABASE_PATH', 'LOG_LEVEL', 'LOG_FILE'
+            'DATABASE_PATH', 'LOG_LEVEL', 'LOG_FILE',
+            'JISUAPI_KEY'
         ]
         for key in env_keys:
             value = os.environ.get(key)

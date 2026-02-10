@@ -32,6 +32,50 @@ def setup_logger() -> logging.Logger:
     return logger
 
 
+def fetch_bank_gold_prices(appkey: str, logger: logging.Logger) -> Optional[Dict[str, Any]]:
+    """
+    抓取各大银行金价（使用极速数据API）
+
+    Args:
+        appkey: 极速数据API密钥
+        logger: 日志器
+
+    Returns:
+        {'banks': list, 'timestamp': str} 或 None
+    """
+    try:
+        url = f'https://api.jisuapi.com/gold/bank?appkey={appkey}'
+        resp = requests.get(url, timeout=15)
+
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get('status') == '0' and data.get('result'):
+                result = data['result']
+                banks = []
+
+                # 解析银行金价数据
+                for bank_data in result.get('list', []):
+                    banks.append({
+                        'bank_name': bank_data.get('name', ''),
+                        'buy_price': float(bank_data.get('xhgbjg', 0)),  # 现货黄金价格
+                        'sell_price': float(bank_data.get('xhgsjg', 0)),  # 现货黄金售价
+                        'update_time': bank_data.get('time', '')
+                    })
+
+                logger.info(f"成功获取 {len(banks)} 家银行金价")
+                return {
+                    'banks': banks,
+                    'timestamp': datetime.now().isoformat()
+                }
+
+        logger.warning(f"极速数据API返回异常: {resp.status_code}")
+        return None
+
+    except Exception as e:
+        logger.warning(f"获取银行金价失败: {e}")
+        return None
+
+
 def fetch_gold_price(logger: logging.Logger) -> Optional[Dict[str, Any]]:
     """
     抓取实时金价（使用多个数据源，确保可用性）
@@ -110,9 +154,9 @@ def load_price_history(logger: logging.Logger) -> list:
 
 
 def save_price_history(history: list, logger: logging.Logger):
-    """保存历史价格记录（只保留最近144条，即24小时 x 每10分钟1条）"""
-    # 只保留最近144条记录
-    history = history[-144:]
+    """保存历史价格记录（只保留最近48条，即24小时 x 每30分钟1条）"""
+    # 只保留最近48条记录
+    history = history[-48:]
     try:
         with open(PRICE_HISTORY_FILE, 'w') as f:
             json.dump(history, f, indent=2)
@@ -278,12 +322,29 @@ def main():
     current_price = price_data['price']
     logger.info(f"当前金价: {current_price} 元/克 (来源: {price_data['source']})")
 
+    # 获取银行金价（如果配置了API密钥）
+    bank_prices = None
+    jisuapi_key = os.environ.get('JISUAPI_KEY')
+    if jisuapi_key:
+        logger.info("正在获取各大银行金价...")
+        bank_prices = fetch_bank_gold_prices(jisuapi_key, logger)
+        if bank_prices:
+            logger.info(f"银行金价获取成功，共 {len(bank_prices['banks'])} 家银行")
+        else:
+            logger.warning("银行金价获取失败，将仅显示国际金价")
+    else:
+        logger.info("未配置 JISUAPI_KEY，跳过银行金价获取")
+
     # 加载历史价格
     history = load_price_history(logger)
     logger.info(f"历史记录: {len(history)} 条")
 
     # 分析价格
     alert_result = analyze_price(current_price, history, threshold, logger)
+
+    # 将银行金价添加到提醒结果中
+    if bank_prices:
+        alert_result['bank_prices'] = bank_prices['banks']
 
     # 保存当前价格到历史
     history.append({
