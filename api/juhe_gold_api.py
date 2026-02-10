@@ -69,15 +69,47 @@ class JuheGoldAPI:
         获取上海期货交易所价格
         包含：沪金主力合约、各月合约
 
-        注意：聚合数据API可能不提供期货数据，或接口地址不同
-        暂时返回None，等待确认正确的接口地址
+        返回数据格式：
+        {
+            "name": "黄金2406",
+            "latestpri": "520.50",
+            "change": "+2.50",
+            "buypri": "520.48",
+            "buyvol": "10",
+            "sellpri": "520.52",
+            "sellvol": "8",
+            "tradvol": "12345",
+            "open": "518.00",
+            "lastclear": "518.00",
+            "maxpri": "521.00",
+            "minpri": "517.50",
+            "position": "45678",
+            "zengcang": "+123",
+            "time": "2024-01-15 15:30:00"
+        }
         """
-        # 暂时禁用期货API，避免404错误
-        self.logger.info("⚠️ 上海期货交易所: 接口暂未配置（等待确认正确地址）")
-        return None
+        result = self._request('shfutures')
+        if result and isinstance(result, list) and len(result) > 0:
+            # 聚合数据返回的是一个包含字典的列表，字典的key是数字
+            futures_list = []
+            first_item = result[0]
+            if isinstance(first_item, dict):
+                for key, value in first_item.items():
+                    if isinstance(value, dict):
+                        # 只保留黄金期货，过滤掉白银期货
+                        name = value.get('name', '')
+                        if '黄金' in name or 'AU' in name.upper() or 'au' in name:
+                            futures_list.append(value)
 
-        # 原代码保留，待确认接口地址后启用
-        # result = self._request('shfutures')
+            if futures_list:
+                self.logger.info(f"✓ 上海期货交易所: 获取 {len(futures_list)} 个黄金合约")
+                return futures_list
+            else:
+                self.logger.warning("✗ 上海期货交易所: 未找到黄金合约数据")
+                return None
+
+        self.logger.warning("✗ 上海期货交易所: 数据获取失败")
+        return None
         if result and isinstance(result, list) and len(result) > 0:
             # 聚合数据返回的是一个包含字典的列表，字典的key是数字
             futures_list = []
@@ -185,23 +217,24 @@ class JuheGoldAPI:
 
         # 提取沪金主力合约
         if all_data['shanghai_futures'] and isinstance(all_data['shanghai_futures'], list):
-            # 期货数据通常第一个就是主力合约
+            # 期货数据通常第一个就是主力合约，或者查找名称中包含"主力"的
             if len(all_data['shanghai_futures']) > 0:
                 item = all_data['shanghai_futures'][0]
                 if isinstance(item, dict):
                     try:
+                        # 期货接口返回的字段名称不同
                         key_prices['futures_main'] = {
-                            'name': item.get('variety', '沪金主力'),
+                            'name': item.get('name', '沪金主力'),
                             'price': float(item.get('latestpri', 0)),
-                            'open': float(item.get('openpri', 0)),
+                            'open': float(item.get('open', 0)),
                             'high': float(item.get('maxpri', 0)),
                             'low': float(item.get('minpri', 0)),
-                            'change': item.get('limit', '0%'),
-                            'yesterday': float(item.get('yespri', 0)),
-                            'volume': item.get('totalvol', '0'),
+                            'change': item.get('change', '0'),
+                            'yesterday': float(item.get('lastclear', 0)),
+                            'volume': item.get('tradvol', '0'),
                             'update_time': item.get('time', '')
                         }
-                        self.logger.info(f"✓ 成功提取期货主力数据: {item.get('variety', '')} = {key_prices['futures_main']['price']} 元/克")
+                        self.logger.info(f"✓ 成功提取期货主力数据: {item.get('name', '')} = {key_prices['futures_main']['price']} 元/克")
                     except (ValueError, TypeError) as e:
                         self.logger.warning(f"解析期货数据失败: {e}")
 
