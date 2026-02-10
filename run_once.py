@@ -318,16 +318,7 @@ def main():
     threshold = alert_config['drop_threshold_percent']
     logger.info(f"下跌阈值: {threshold}%")
 
-    # 抓取实时金价
-    price_data = fetch_gold_price(logger)
-    if not price_data:
-        logger.error("无法获取金价，本次运行结束")
-        sys.exit(1)
-
-    current_price = price_data['price']
-    logger.info(f"当前金价: {current_price} 元/克 (来源: {price_data['source']})")
-
-    # 获取银行金价（如果配置了API密钥）
+    # 获取银行金价（如果配置了API密钥）- 先测试这个
     bank_prices = None
     jisuapi_key = os.environ.get('JISUAPI_KEY')
     if jisuapi_key:
@@ -336,9 +327,18 @@ def main():
         if bank_prices:
             logger.info(f"银行金价获取成功，共 {len(bank_prices['banks'])} 家银行")
         else:
-            logger.warning("银行金价获取失败，将仅显示国际金价")
+            logger.warning("银行金价获取失败")
     else:
         logger.info("未配置 JISUAPI_KEY，跳过银行金价获取")
+
+    # 抓取实时金价
+    price_data = fetch_gold_price(logger)
+    if not price_data:
+        logger.error("无法获取金价，本次运行结束")
+        sys.exit(1)
+
+    current_price = price_data['price']
+    logger.info(f"当前金价: {current_price} 元/克 (来源: {price_data['source']})")
 
     # 加载历史价格
     history = load_price_history(logger)
