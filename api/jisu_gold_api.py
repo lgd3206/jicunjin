@@ -141,68 +141,89 @@ class JisuGoldAPI:
         }
 
         # 提取AU9999价格
-        if all_data['shanghai_gold']:
+        if all_data['shanghai_gold'] and isinstance(all_data['shanghai_gold'], list):
             for item in all_data['shanghai_gold']:
-                if 'AU9999' in item.get('variety', ''):
-                    key_prices['au9999'] = {
-                        'name': item.get('variety'),
-                        'price': float(item.get('latestpri', 0)),
-                        'open': float(item.get('openpri', 0)),
-                        'high': float(item.get('maxpri', 0)),
-                        'low': float(item.get('minpri', 0)),
-                        'update_time': item.get('time', '')
-                    }
-                    break
+                if isinstance(item, dict) and 'AU9999' in str(item.get('variety', '')):
+                    try:
+                        key_prices['au9999'] = {
+                            'name': item.get('variety', 'AU9999'),
+                            'price': float(item.get('latestpri', 0)),
+                            'open': float(item.get('openpri', 0)),
+                            'high': float(item.get('maxpri', 0)),
+                            'low': float(item.get('minpri', 0)),
+                            'update_time': item.get('time', '')
+                        }
+                        break
+                    except (ValueError, TypeError) as e:
+                        self.logger.warning(f"解析AU9999数据失败: {e}")
+                        continue
 
         # 提取工商银行账户金
-        if all_data['bank_gold']:
+        if all_data['bank_gold'] and isinstance(all_data['bank_gold'], list):
             for item in all_data['bank_gold']:
-                if item.get('typename') == '人民币账户黄金':
-                    key_prices['bank_gold'] = {
-                        'name': '工商银行账户金',
-                        'buy_price': float(item.get('buyprice', 0)),
-                        'sell_price': float(item.get('sellprice', 0)),
-                        'mid_price': float(item.get('midprice', 0)),
-                        'high': float(item.get('maxprice', 0)),
-                        'low': float(item.get('minprice', 0)),
-                        'update_time': item.get('updatetime', '')
-                    }
-                    break
+                if isinstance(item, dict) and item.get('typename') == '人民币账户黄金':
+                    try:
+                        key_prices['bank_gold'] = {
+                            'name': '工商银行账户金',
+                            'buy_price': float(item.get('buyprice', 0)),
+                            'sell_price': float(item.get('sellprice', 0)),
+                            'mid_price': float(item.get('midprice', 0)),
+                            'high': float(item.get('maxprice', 0)),
+                            'low': float(item.get('minprice', 0)),
+                            'update_time': item.get('updatetime', '')
+                        }
+                        break
+                    except (ValueError, TypeError) as e:
+                        self.logger.warning(f"解析工商银行数据失败: {e}")
+                        continue
 
         # 提取伦敦金价格
-        if all_data['london_gold']:
+        if all_data['london_gold'] and isinstance(all_data['london_gold'], list):
             for item in all_data['london_gold']:
-                if '伦敦金' in item.get('variety', ''):
-                    key_prices['london_gold'] = {
-                        'name': item.get('variety'),
-                        'price': float(item.get('price', 0)),
-                        'update_time': item.get('time', '')
-                    }
-                    break
+                if isinstance(item, dict) and '伦敦金' in str(item.get('variety', '')):
+                    try:
+                        key_prices['london_gold'] = {
+                            'name': item.get('variety', '伦敦金'),
+                            'price': float(item.get('price', 0)),
+                            'update_time': item.get('time', '')
+                        }
+                        break
+                    except (ValueError, TypeError) as e:
+                        self.logger.warning(f"解析伦敦金数据失败: {e}")
+                        continue
 
         # 提取沪金主力合约
-        if all_data['shanghai_futures']:
+        if all_data['shanghai_futures'] and isinstance(all_data['shanghai_futures'], list):
             for item in all_data['shanghai_futures']:
-                if '主力' in item.get('variety', ''):
-                    key_prices['futures_main'] = {
-                        'name': item.get('variety'),
-                        'price': float(item.get('latestpri', 0)),
-                        'open': float(item.get('openpri', 0)),
-                        'high': float(item.get('maxpri', 0)),
-                        'low': float(item.get('minpri', 0)),
-                        'update_time': item.get('time', '')
-                    }
-                    break
+                if isinstance(item, dict) and '主力' in str(item.get('variety', '')):
+                    try:
+                        key_prices['futures_main'] = {
+                            'name': item.get('variety', '沪金主力'),
+                            'price': float(item.get('latestpri', 0)),
+                            'open': float(item.get('openpri', 0)),
+                            'high': float(item.get('maxpri', 0)),
+                            'low': float(item.get('minpri', 0)),
+                            'update_time': item.get('time', '')
+                        }
+                        break
+                    except (ValueError, TypeError) as e:
+                        self.logger.warning(f"解析期货数据失败: {e}")
+                        continue
 
         # 提取金店金价（前3家）
-        if all_data['store_gold']:
+        if all_data['store_gold'] and isinstance(all_data['store_gold'], list):
             for item in all_data['store_gold'][:3]:
-                key_prices['store_gold'].append({
-                    'name': item.get('name', ''),
-                    'price': float(item.get('price', 0)),
-                    'unit': item.get('unit', ''),
-                    'update_time': item.get('time', '')
-                })
+                if isinstance(item, dict):
+                    try:
+                        key_prices['store_gold'].append({
+                            'name': item.get('name', ''),
+                            'price': float(item.get('price', 0)),
+                            'unit': item.get('unit', '元/克'),
+                            'update_time': item.get('time', '')
+                        })
+                    except (ValueError, TypeError) as e:
+                        self.logger.warning(f"解析金店数据失败: {e}")
+                        continue
 
         return key_prices
 
