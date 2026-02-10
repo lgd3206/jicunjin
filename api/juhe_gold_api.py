@@ -68,8 +68,16 @@ class JuheGoldAPI:
         """
         获取上海期货交易所价格
         包含：沪金主力合约、各月合约
+
+        注意：聚合数据API可能不提供期货数据，或接口地址不同
+        暂时返回None，等待确认正确的接口地址
         """
-        result = self._request('shfutures')
+        # 暂时禁用期货API，避免404错误
+        self.logger.info("⚠️ 上海期货交易所: 接口暂未配置（等待确认正确地址）")
+        return None
+
+        # 原代码保留，待确认接口地址后启用
+        # result = self._request('shfutures')
         if result and isinstance(result, list) and len(result) > 0:
             # 聚合数据返回的是一个包含字典的列表，字典的key是数字
             futures_list = []
