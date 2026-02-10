@@ -51,24 +51,31 @@ def fetch_bank_gold_prices(appkey: str, logger: logging.Logger) -> Optional[Dict
             data = resp.json()
             logger.info(f"极速数据API返回: {data}")  # 调试日志
 
-            if data.get('status') == '0' and data.get('result'):
+            # 注意：status 是数字 0，不是字符串 '0'
+            if data.get('status') == 0 and data.get('result'):
                 result = data['result']
                 banks = []
 
-                # 解析银行金价数据
-                for bank_data in result.get('list', []):
-                    banks.append({
-                        'bank_name': bank_data.get('name', ''),
-                        'buy_price': float(bank_data.get('xhgbjg', 0)),  # 现货黄金价格
-                        'sell_price': float(bank_data.get('xhgsjg', 0)),  # 现货黄金售价
-                        'update_time': bank_data.get('time', '')
-                    })
+                # 解析银行金价数据 - result 直接是列表
+                for bank_data in result:
+                    # 只处理人民币账户黄金
+                    if bank_data.get('typename') == '人民币账户黄金':
+                        banks.append({
+                            'bank_name': '工商银行',  # API返回的是账户类型，不是银行名称
+                            'buy_price': float(bank_data.get('buyprice', 0)),
+                            'sell_price': float(bank_data.get('sellprice', 0)),
+                            'update_time': bank_data.get('updatetime', '')
+                        })
 
-                logger.info(f"成功获取 {len(banks)} 家银行金价")
-                return {
-                    'banks': banks,
-                    'timestamp': datetime.now().isoformat()
-                }
+                if banks:
+                    logger.info(f"成功获取银行金价数据")
+                    return {
+                        'banks': banks,
+                        'timestamp': datetime.now().isoformat()
+                    }
+                else:
+                    logger.warning("API返回数据中未找到人民币账户黄金")
+                    return None
             else:
                 logger.warning(f"API返回状态异常: status={data.get('status')}, msg={data.get('msg')}")
                 return None
