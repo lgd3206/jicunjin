@@ -248,7 +248,7 @@ class EnhancedEmailNotifier:
 
                     <div class="footer">
                         <p>这是一封自动生成的邮件，请勿直接回复。</p>
-                        <p>数据来源：极速数据API | 发送时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                        <p>数据来源：聚合数据API | 发送时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
                     </div>
                 </div>
             </body>
@@ -289,16 +289,25 @@ class EnhancedEmailNotifier:
     def _generate_shanghai_gold_section(self, data: Dict) -> str:
         """生成上海黄金交易所部分"""
         au9999 = data.get('au9999')
-        if not au9999:
+        au_td = data.get('au_td')
+
+        if not au9999 and not au_td:
             return ""
 
-        return f"""
-        <div class="section">
-            <div class="section-title">🏛️ 上海黄金交易所 AU9999</div>
+        html = '<div class="section"><div class="section-title">🏛️ 上海黄金交易所</div>'
+
+        # Au99.99
+        if au9999:
+            html += f"""
             <div class="price-card">
+                <h4 style="margin-top:0; color:#667eea;">Au99.99</h4>
                 <div class="price-row">
                     <span class="label">最新价:</span>
                     <span class="value">{au9999.get('price', 0)} 元/克</span>
+                </div>
+                <div class="price-row">
+                    <span class="label">涨跌幅:</span>
+                    <span class="value">{au9999.get('change', '0%')}</span>
                 </div>
                 <div class="price-row">
                     <span class="label">开盘价:</span>
@@ -313,72 +322,62 @@ class EnhancedEmailNotifier:
                     <span class="value">{au9999.get('low', 0)} 元/克</span>
                 </div>
                 <div class="price-row">
+                    <span class="label">成交量:</span>
+                    <span class="value">{au9999.get('volume', '0')}</span>
+                </div>
+                <div class="price-row">
                     <span class="label">更新时间:</span>
                     <span class="value">{au9999.get('update_time', '')}</span>
                 </div>
             </div>
-        </div>
-        """
+            """
+
+        # Au(T+D)
+        if au_td:
+            html += f"""
+            <div class="price-card" style="margin-top:15px;">
+                <h4 style="margin-top:0; color:#667eea;">Au(T+D) 黄金延期</h4>
+                <div class="price-row">
+                    <span class="label">最新价:</span>
+                    <span class="value">{au_td.get('price', 0)} 元/克</span>
+                </div>
+                <div class="price-row">
+                    <span class="label">涨跌幅:</span>
+                    <span class="value">{au_td.get('change', '0%')}</span>
+                </div>
+                <div class="price-row">
+                    <span class="label">开盘价:</span>
+                    <span class="value">{au_td.get('open', 0)} 元/克</span>
+                </div>
+                <div class="price-row">
+                    <span class="label">最高价:</span>
+                    <span class="value">{au_td.get('high', 0)} 元/克</span>
+                </div>
+                <div class="price-row">
+                    <span class="label">最低价:</span>
+                    <span class="value">{au_td.get('low', 0)} 元/克</span>
+                </div>
+                <div class="price-row">
+                    <span class="label">成交量:</span>
+                    <span class="value">{au_td.get('volume', '0')}</span>
+                </div>
+                <div class="price-row">
+                    <span class="label">更新时间:</span>
+                    <span class="value">{au_td.get('update_time', '')}</span>
+                </div>
+            </div>
+            """
+
+        html += '</div>'
+        return html
 
     def _generate_bank_gold_section(self, data: Dict) -> str:
-        """生成工商银行账户金部分"""
-        bank_gold = data.get('bank_gold')
-        if not bank_gold:
-            return ""
-
-        return f"""
-        <div class="section">
-            <div class="section-title">🏦 工商银行账户金</div>
-            <div class="price-card">
-                <div class="price-row">
-                    <span class="label">买入价:</span>
-                    <span class="value" style="color: #4caf50;">{bank_gold.get('buy_price', 0)} 元/克</span>
-                </div>
-                <div class="price-row">
-                    <span class="label">卖出价:</span>
-                    <span class="value" style="color: #f44336;">{bank_gold.get('sell_price', 0)} 元/克</span>
-                </div>
-                <div class="price-row">
-                    <span class="label">中间价:</span>
-                    <span class="value">{bank_gold.get('mid_price', 0)} 元/克</span>
-                </div>
-                <div class="price-row">
-                    <span class="label">今日最高:</span>
-                    <span class="value">{bank_gold.get('high', 0)} 元/克</span>
-                </div>
-                <div class="price-row">
-                    <span class="label">今日最低:</span>
-                    <span class="value">{bank_gold.get('low', 0)} 元/克</span>
-                </div>
-                <div class="price-row">
-                    <span class="label">更新时间:</span>
-                    <span class="value">{bank_gold.get('update_time', '')}</span>
-                </div>
-            </div>
-        </div>
-        """
+        """生成银行账户金部分（聚合数据API不提供此数据）"""
+        return ""
 
     def _generate_london_gold_section(self, data: Dict) -> str:
-        """生成伦敦金部分"""
-        london_gold = data.get('london_gold')
-        if not london_gold:
-            return ""
-
-        return f"""
-        <div class="section">
-            <div class="section-title">🌍 伦敦金（国际金价）</div>
-            <div class="price-card">
-                <div class="price-row">
-                    <span class="label">价格:</span>
-                    <span class="value">{london_gold.get('price', 0)} 美元/盎司</span>
-                </div>
-                <div class="price-row">
-                    <span class="label">更新时间:</span>
-                    <span class="value">{london_gold.get('update_time', '')}</span>
-                </div>
-            </div>
-        </div>
-        """
+        """生成伦敦金部分（聚合数据API不提供此数据）"""
+        return ""
 
     def _generate_futures_section(self, data: Dict) -> str:
         """生成期货合约部分"""
@@ -388,11 +387,19 @@ class EnhancedEmailNotifier:
 
         return f"""
         <div class="section">
-            <div class="section-title">📈 沪金主力合约</div>
+            <div class="section-title">📈 上海期货交易所 - 沪金主力合约</div>
             <div class="price-card">
+                <div class="price-row">
+                    <span class="label">合约名称:</span>
+                    <span class="value">{futures.get('name', '沪金主力')}</span>
+                </div>
                 <div class="price-row">
                     <span class="label">最新价:</span>
                     <span class="value">{futures.get('price', 0)} 元/克</span>
+                </div>
+                <div class="price-row">
+                    <span class="label">涨跌幅:</span>
+                    <span class="value">{futures.get('change', '0%')}</span>
                 </div>
                 <div class="price-row">
                     <span class="label">开盘价:</span>
@@ -407,6 +414,10 @@ class EnhancedEmailNotifier:
                     <span class="value">{futures.get('low', 0)} 元/克</span>
                 </div>
                 <div class="price-row">
+                    <span class="label">成交量:</span>
+                    <span class="value">{futures.get('volume', '0')}</span>
+                </div>
+                <div class="price-row">
                     <span class="label">更新时间:</span>
                     <span class="value">{futures.get('update_time', '')}</span>
                 </div>
@@ -415,38 +426,8 @@ class EnhancedEmailNotifier:
         """
 
     def _generate_store_gold_section(self, data: Dict) -> str:
-        """生成金店金价部分"""
-        stores = data.get('store_gold', [])
-        if not stores:
-            return ""
-
-        rows = ""
-        for store in stores:
-            rows += f"""
-            <tr>
-                <td>{store.get('name', '')}</td>
-                <td style="color: #667eea; font-weight: bold;">{store.get('price', 0)} {store.get('unit', '')}</td>
-                <td>{store.get('update_time', '')}</td>
-            </tr>
-            """
-
-        return f"""
-        <div class="section">
-            <div class="section-title">💍 金店金价（前3家）</div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>金店名称</th>
-                        <th>价格</th>
-                        <th>更新时间</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows}
-                </tbody>
-            </table>
-        </div>
-        """
+        """生成金店金价部分（聚合数据API不提供此数据）"""
+        return ""
 
     def _generate_reasons_section(self, data: Dict) -> str:
         """生成触发原因部分"""

@@ -1,6 +1,6 @@
 """
-GitHub Actions 单次运行脚本 - 增强版
-整合极速数据API所有金价数据源，为用户提供最全面的金价信息
+GitHub Actions 单次运行脚本 - 聚合数据版
+使用聚合数据API获取上海黄金交易所和期货交易所的金价数据
 """
 import os
 import sys
@@ -15,7 +15,7 @@ from typing import Dict, Any, Optional
 sys.path.insert(0, str(Path(__file__).parent))
 
 from config.config_loader import ConfigLoader
-from api.jisu_gold_api import JisuGoldAPI
+from api.juhe_gold_api import JuheGoldAPI
 from notifications.enhanced_email_notifier import EnhancedEmailNotifier
 
 # 历史价格文件
@@ -233,10 +233,10 @@ def send_email_alert(alert_result: Dict[str, Any], config: ConfigLoader, logger:
 
 
 def main():
-    """主函数 - 单次运行（增强版）"""
+    """主函数 - 单次运行（聚合数据版）"""
     logger = setup_logger()
     logger.info("=" * 60)
-    logger.info("积存金价格监控 - GitHub Actions 单次运行（增强版）")
+    logger.info("积存金价格监控 - GitHub Actions 单次运行（聚合数据版）")
     logger.info(f"运行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 60)
 
@@ -255,36 +255,40 @@ def main():
     threshold = alert_config['drop_threshold_percent']
     logger.info(f"下跌阈值: {threshold}%")
 
-    # 获取极速数据API密钥
-    jisuapi_key = os.environ.get('JISUAPI_KEY')
+    # 获取聚合数据API密钥
+    juhe_api_key = os.environ.get('JUHE_API_KEY')
 
     # 初始化金价数据
     current_price = None
     key_prices = {}
 
-    if jisuapi_key:
+    if juhe_api_key:
         logger.info("=" * 60)
-        logger.info("使用极速数据API获取所有金价数据...")
+        logger.info("使用聚合数据API获取金价数据...")
         logger.info("=" * 60)
 
         try:
-            # 使用极速数据API获取所有金价
-            jisu_api = JisuGoldAPI(jisuapi_key, logger)
-            key_prices = jisu_api.get_key_prices()
+            # 使用聚合数据API获取所有金价
+            juhe_api = JuheGoldAPI(juhe_api_key, logger)
+            key_prices = juhe_api.get_key_prices()
 
-            # 优先使用上海黄金交易所AU9999价格
+            # 优先使用上海黄金交易所Au99.99价格
             if key_prices.get('au9999'):
                 current_price = key_prices['au9999']['price']
-                logger.info(f"✓ 使用上海黄金交易所AU9999价格: {current_price} 元/克")
-            # 其次使用工商银行账户金中间价
-            elif key_prices.get('bank_gold'):
-                current_price = key_prices['bank_gold']['mid_price']
-                logger.info(f"✓ 使用工商银行账户金中间价: {current_price} 元/克")
+                logger.info(f"✓ 使用上海黄金交易所Au99.99价格: {current_price} 元/克")
+            # 其次使用黄金延期Au(T+D)价格
+            elif key_prices.get('au_td'):
+                current_price = key_prices['au_td']['price']
+                logger.info(f"✓ 使用黄金延期Au(T+D)价格: {current_price} 元/克")
+            # 最后使用期货主力合约价格
+            elif key_prices.get('futures_main'):
+                current_price = key_prices['futures_main']['price']
+                logger.info(f"✓ 使用沪金主力合约价格: {current_price} 元/克")
 
         except Exception as e:
-            logger.error(f"极速数据API获取失败: {e}")
+            logger.error(f"聚合数据API获取失败: {e}")
 
-    # 如果极速数据API失败，使用备用数据源
+    # 如果聚合数据API失败，使用备用数据源
     if current_price is None:
         logger.info("=" * 60)
         logger.info("使用备用数据源获取金价...")
@@ -305,14 +309,14 @@ def main():
     # 分析价格
     alert_result = analyze_price(current_price, history, threshold, logger)
 
-    # 将极速数据API的关键金价添加到提醒结果中
+    # 将聚合数据API的关键金价添加到提醒结果中
     if key_prices:
         alert_result.update(key_prices)
 
     # 保存当前价格到历史
     history.append({
         'price': current_price,
-        'source': 'jisu-api' if jisuapi_key else 'fallback',
+        'source': 'juhe-api' if juhe_api_key else 'fallback',
         'timestamp': datetime.now().isoformat()
     })
     save_price_history(history, logger)

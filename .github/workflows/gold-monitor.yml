@@ -50,7 +50,7 @@ jobs:
           ENABLE_EMAIL_NOTIFICATION: ${{ secrets.ENABLE_EMAIL_NOTIFICATION }}
           TEST_MODE: ${{ secrets.TEST_MODE }}
           MANUAL_GOLD_PRICE: ${{ github.event.inputs.manual_price }}
-          JISUAPI_KEY: ${{ secrets.JISUAPI_KEY }}
+          JUHE_API_KEY: ${{ secrets.JUHE_API_KEY }}
         run: python run_once.py
 
       - name: 保存历史价格数据
