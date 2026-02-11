@@ -385,6 +385,17 @@ def main():
     save_price_history(history, logger)
 
     # 判断是否需要发送提醒
+    force_alert = os.environ.get('FORCE_ALERT', 'false').lower() == 'true'
+
+    if force_alert:
+        logger.info("=" * 60)
+        logger.info("强制发送邮件模式（测试用）")
+        logger.info("=" * 60)
+        alert_result['should_alert'] = True
+        alert_result['alert_level'] = 'TEST'
+        if not alert_result.get('alert_reasons'):
+            alert_result['alert_reasons'] = ['测试邮件 - 手动触发']
+
     if alert_result['should_alert']:
         logger.info(f"触发提醒! 等级: {alert_result['alert_level']}")
         for reason in alert_result['alert_reasons']:

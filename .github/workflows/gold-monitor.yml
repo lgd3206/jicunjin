@@ -11,6 +11,11 @@ on:
         description: '手动设置金价（测试用）'
         required: false
         type: string
+      force_alert:
+        description: '强制发送邮件（测试用）'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -50,6 +55,7 @@ jobs:
           ENABLE_EMAIL_NOTIFICATION: ${{ secrets.ENABLE_EMAIL_NOTIFICATION }}
           TEST_MODE: ${{ secrets.TEST_MODE }}
           MANUAL_GOLD_PRICE: ${{ github.event.inputs.manual_price }}
+          FORCE_ALERT: ${{ github.event.inputs.force_alert }}
           JUHE_API_KEY: ${{ secrets.JUHE_API_KEY }}
         run: python run_once.py
 
