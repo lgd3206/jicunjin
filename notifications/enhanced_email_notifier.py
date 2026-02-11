@@ -248,7 +248,7 @@ class EnhancedEmailNotifier:
 
                     <div class="footer">
                         <p>这是一封自动生成的邮件，请勿直接回复。</p>
-                        <p>数据来源：聚合数据API + 小小API | 发送时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                        <p>数据来源：上海黄金交易所、各大银行、期货交易所等权威渠道 | 发送时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
                     </div>
                 </div>
             </body>
