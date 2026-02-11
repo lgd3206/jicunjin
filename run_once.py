@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from config.config_loader import ConfigLoader
 from api.juhe_gold_api import JuheGoldAPI
+from api.xiaoxiao_gold_api import XiaoxiaoGoldAPI
 from notifications.enhanced_email_notifier import EnhancedEmailNotifier
 
 # 历史价格文件
@@ -288,7 +289,69 @@ def main():
         except Exception as e:
             logger.error(f"聚合数据API获取失败: {e}")
 
-    # 如果聚合数据API失败，使用备用数据源
+    # 获取银行金价数据（小小API - 完全免费）
+    logger.info("=" * 60)
+    logger.info("获取银行金价数据...")
+    logger.info("=" * 60)
+
+    bank_prices = {}
+    brand_prices = []
+    recycle_prices = []
+
+    try:
+        xiaoxiao_api = XiaoxiaoGoldAPI(logger)
+
+        # 一次性获取所有数据（避免重复调用）
+        all_xiaoxiao_data = xiaoxiao_api.fetch_all_gold_prices()
+
+        if all_xiaoxiao_data:
+            # 提取银行金价
+            bank_gold_list = all_xiaoxiao_data.get('bank_gold_bar_price', [])
+            if bank_gold_list:
+                # 转换为key_bank_prices格式
+                for item in bank_gold_list:
+                    bank_name = item.get('bank', '')
+                    price = float(item.get('price', 0))
+
+                    if '工商银行' in bank_name or '工行' in bank_name:
+                        bank_prices['icbc'] = {'name': bank_name, 'price': price, 'type': '投资金条'}
+                    elif '建设银行' in bank_name or '建行' in bank_name:
+                        bank_prices['ccb'] = {'name': bank_name, 'price': price, 'type': '投资金条'}
+                    elif '中国银行' in bank_name or '中行' in bank_name:
+                        bank_prices['boc'] = {'name': bank_name, 'price': price, 'type': '投资金条'}
+                    elif '农业银行' in bank_name or '农行' in bank_name:
+                        bank_prices['abc'] = {'name': bank_name, 'price': price, 'type': '投资金条'}
+                    elif '浦发银行' in bank_name or '浦发' in bank_name:
+                        bank_prices['spdb'] = {'name': bank_name, 'price': price, 'type': '投资金条'}
+                    elif '平安' in bank_name:
+                        bank_prices['pingan'] = {'name': bank_name, 'price': price, 'type': '投资金条'}
+
+                if bank_prices:
+                    key_prices['bank_prices'] = bank_prices
+                    bank_count = sum(1 for v in bank_prices.values() if v)
+                    logger.info(f"✓ 成功获取 {bank_count} 家银行金价")
+
+                    # 如果没有上海金交所数据，使用工商银行金价作为当前价格
+                    if current_price is None and bank_prices.get('icbc'):
+                        current_price = bank_prices['icbc']['price']
+                        logger.info(f"✓ 使用工商银行金条价格: {current_price} 元/克")
+
+            # 提取品牌金店价格（前5家）
+            brand_prices = all_xiaoxiao_data.get('precious_metal_price', [])[:5]
+            if brand_prices:
+                key_prices['brand_prices'] = brand_prices
+                logger.info(f"✓ 成功获取 {len(brand_prices)} 家品牌金店价格")
+
+            # 提取回收价格（前5种）
+            recycle_prices = all_xiaoxiao_data.get('gold_recycle_price', [])[:5]
+            if recycle_prices:
+                key_prices['recycle_prices'] = recycle_prices
+                logger.info(f"✓ 成功获取 {len(recycle_prices)} 种回收价格")
+
+    except Exception as e:
+        logger.warning(f"小小API获取失败: {e}")
+
+    # 如果所有数据源都失败，使用备用数据源
     if current_price is None:
         logger.info("=" * 60)
         logger.info("使用备用数据源获取金价...")

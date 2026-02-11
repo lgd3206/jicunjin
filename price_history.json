@@ -7,6 +7,40 @@
   {
     "price": 1124.6,
     "source": "juhe-api",
+<<<<<<< HEAD
     "timestamp": "2026-02-11T06:52:01.213612"
+=======
+    "timestamp": "2026-02-10T13:11:59.433510"
+  },
+  {
+    "price": 1123.36,
+    "source": "fallback",
+    "timestamp": "2026-02-10T21:17:07.041215"
+  },
+  {
+    "price": 1138.47,
+    "source": "fallback",
+    "timestamp": "2026-02-11T14:42:09.160183"
+  },
+  {
+    "price": 1138.47,
+    "source": "fallback",
+    "timestamp": "2026-02-11T14:42:25.022243"
+  },
+  {
+    "price": 1138.47,
+    "source": "fallback",
+    "timestamp": "2026-02-11T14:54:32.365542"
+  },
+  {
+    "price": 1138.47,
+    "source": "fallback",
+    "timestamp": "2026-02-11T14:54:50.807431"
+  },
+  {
+    "price": 1125.99,
+    "source": "fallback",
+    "timestamp": "2026-02-11T14:55:36.402884"
+>>>>>>> 5148cd1 (完善邮件功能：集成银行金价、品牌金店和回收价格)
   }
 ]

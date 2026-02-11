@@ -239,16 +239,16 @@ class EnhancedEmailNotifier:
                         {self._generate_alert_section(alert_data)}
                         {self._generate_shanghai_gold_section(alert_data)}
                         {self._generate_bank_gold_section(alert_data)}
-                        {self._generate_london_gold_section(alert_data)}
                         {self._generate_futures_section(alert_data)}
                         {self._generate_store_gold_section(alert_data)}
+                        {self._generate_recycle_section(alert_data)}
                         {self._generate_reasons_section(alert_data)}
                         {self._generate_tip_section()}
                     </div>
 
                     <div class="footer">
                         <p>这是一封自动生成的邮件，请勿直接回复。</p>
-                        <p>数据来源：聚合数据API | 发送时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                        <p>数据来源：聚合数据API + 小小API | 发送时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
                     </div>
                 </div>
             </body>
@@ -372,8 +372,32 @@ class EnhancedEmailNotifier:
         return html
 
     def _generate_bank_gold_section(self, data: Dict) -> str:
-        """生成银行账户金部分（聚合数据API不提供此数据）"""
-        return ""
+        """生成银行账户金部分"""
+        bank_prices = data.get('bank_prices', {})
+        if not bank_prices or not any(bank_prices.values()):
+            return ""
+
+        html = '<div class="section"><div class="section-title">🏦 银行投资金条价格</div>'
+
+        # 遍历所有银行
+        for bank_code, bank_data in bank_prices.items():
+            if bank_data:
+                html += f"""
+                <div class="price-card" style="margin-bottom:10px;">
+                    <h4 style="margin-top:0; color:#667eea;">{bank_data['name']}</h4>
+                    <div class="price-row">
+                        <span class="label">价格:</span>
+                        <span class="value">{bank_data['price']} 元/克</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="label">类型:</span>
+                        <span class="value">{bank_data['type']}</span>
+                    </div>
+                </div>
+                """
+
+        html += '</div>'
+        return html
 
     def _generate_london_gold_section(self, data: Dict) -> str:
         """生成伦敦金部分（聚合数据API不提供此数据）"""
@@ -426,8 +450,103 @@ class EnhancedEmailNotifier:
         """
 
     def _generate_store_gold_section(self, data: Dict) -> str:
-        """生成金店金价部分（聚合数据API不提供此数据）"""
-        return ""
+        """生成品牌金店价格部分"""
+        brand_prices = data.get('brand_prices', [])
+        if not brand_prices:
+            return ""
+
+        rows = ""
+        for item in brand_prices:
+            bullion = item.get('bullion_price', '-')
+            gold = item.get('gold_price', '-')
+            platinum = item.get('platinum_price', '-')
+
+            rows += f"""
+            <tr>
+                <td>{item.get('brand', '')}</td>
+                <td style="color: #667eea; font-weight: bold;">{bullion}</td>
+                <td style="color: #f39c12; font-weight: bold;">{gold}</td>
+                <td style="color: #95a5a6;">{platinum}</td>
+                <td style="font-size: 12px; color: #999;">{item.get('updated_date', '')}</td>
+            </tr>
+            """
+
+        return f"""
+        <div class="section">
+            <div class="section-title">💍 品牌金店价格（前5家）</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>品牌</th>
+                        <th>金条价</th>
+                        <th>黄金价</th>
+                        <th>铂金价</th>
+                        <th>更新日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows}
+                </tbody>
+            </table>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">
+                💡 提示：金店价格包含加工费和品牌溢价，通常高于批发价
+            </p>
+        </div>
+        """
+
+    def _generate_recycle_section(self, data: Dict) -> str:
+        """生成黄金回收价格部分"""
+        recycle_prices = data.get('recycle_prices', [])
+        if not recycle_prices:
+            return ""
+
+        rows = ""
+        for item in recycle_prices:
+            gold_type = item.get('gold_type', '')
+            price = item.get('recycle_price', '0')
+
+            # 根据金类型设置不同颜色
+            if '24K' in gold_type or '黄金' in gold_type:
+                color = '#f39c12'
+            elif '18K' in gold_type:
+                color = '#e67e22'
+            elif '14K' in gold_type:
+                color = '#d35400'
+            elif '钯金' in gold_type:
+                color = '#95a5a6'
+            elif '银' in gold_type:
+                color = '#bdc3c7'
+            else:
+                color = '#667eea'
+
+            rows += f"""
+            <tr>
+                <td>{gold_type}</td>
+                <td style="color: {color}; font-weight: bold; font-size: 16px;">{price} 元/克</td>
+                <td style="font-size: 12px; color: #999;">{item.get('updated_date', '')}</td>
+            </tr>
+            """
+
+        return f"""
+        <div class="section">
+            <div class="section-title">♻️ 黄金回收价格（前5种）</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>品种</th>
+                        <th>回收价</th>
+                        <th>更新日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows}
+                </tbody>
+            </table>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">
+                💡 提示：回收价格仅供参考，实际价格以回收商报价为准
+            </p>
+        </div>
+        """
 
     def _generate_reasons_section(self, data: Dict) -> str:
         """生成触发原因部分"""
