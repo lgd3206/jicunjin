@@ -1,500 +1,231 @@
-"""
-🎉 项目最终完成报告 - 金价自动化监控与提醒系统
-"""
+# 积存金价格监控系统
 
-# ============================================================================
-# 📊 项目最终完成报告
-# ============================================================================
+[![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automated-brightgreen)](https://github.com/features/actions)
+[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-## 🎯 项目完成情况
+一个基于 GitHub Actions 的自动化黄金价格监控系统，帮助投资者及时捕捉黄金价格波动，不错过最佳买入时机。
 
-**项目名称**: 金价自动化监控与提醒系统
-**项目版本**: 2.0.0 (完整版)
-**完成日期**: 2024-01-15
-**项目状态**: ✅ 完成并可立即部署
-**总工作量**: 5000+ 行代码 + 20000+ 字文档
+## ✨ 核心特性
 
----
+### 📊 全面的数据覆盖（6大类数据源）
 
-## ✅ 所有需求已实现
+- **上海黄金交易所**：Au99.99、Au(T+D) 等官方权威数据
+- **银行投资金条**：6家主流银行实时金价（工商、建设、中国、农业、浦发、平安）
+- **上海期货交易所**：沪金主力合约价格
+- **品牌金店价格**：11家知名品牌（周大福、老凤祥等）
+- **黄金回收价格**：10种回收类型（24K、18K、14K等）
+- **实时价格分析**：24小时最高/最低价、波动幅度分析
 
-### 用户需求 1: 定时运行 ✅
-- [x] 每 10 分钟自动运行一次
-- [x] Windows 任务计划程序支持
-- [x] Linux cron 支持
-- [x] Docker 容器支持
-- [x] systemd 服务支持
-- **实现文件**: `scheduled_monitor.py`
+### 🎯 智能监控与提醒
 
-### 用户需求 2: 防封策略 ✅
-- [x] 随机 User-Agent (5 种常见浏览器)
-- [x] 随机延时 (1-5 秒)
-- [x] 请求头配置
-- [x] IP 轮换支持
-- [x] 代理支持
-- **实现文件**: `scheduled_monitor.py`
+- ✅ 自动监控金价波动，每30分钟检查一次
+- ✅ 智能分析24小时价格趋势
+- ✅ 多条件触发提醒（最低价、下跌阈值、大幅波动）
+- ✅ 精美的HTML邮件报告，数据一目了然
+- ✅ 完全免费，无需服务器
 
-### 用户需求 3: 异常处理 ✅
-- [x] 完整的日志记录
-- [x] 错误恢复机制
-- [x] 重试策略
-- [x] 性能监控
-- [x] 统计信息
-- **实现文件**: `scheduled_monitor.py`, `email_alert_integration.py`
+### 🆚 竞品对比
 
-### 用户需求 4: 完整代码包 ✅
-- [x] 所有源代码已完成
-- [x] 所有文档已完成
-- [x] 部署脚本已创建
-- [x] 测试脚本已创建
-- [x] 示例脚本已创建
-- **交付物**: 40+ 个文件
+| 对比项 | 本项目 | 闲鱼竞品（¥3.9/周） |
+|--------|--------|---------------------|
+| **数据源数量** | 6类数据源 | 仅1类（银行金价） |
+| **银行金价** | 6家银行 | 5家银行 |
+| **品牌金店** | 11家品牌 | ❌ 无 |
+| **回收价格** | 10种类型 | ❌ 无 |
+| **官方交易所** | ✅ 上海金交所 + 期货 | ❌ 无 |
+| **价格分析** | ✅ 24小时趋势分析 | ❌ 无 |
+| **费用** | 🎉 完全免费 | ¥3.9/周 |
+| **开源** | ✅ GitHub开源 | ❌ 闭源 |
 
-### 用户需求 5: 服务器部署指南 ✅
-- [x] Windows 部署指南
-- [x] Linux 部署指南
-- [x] Mac 部署指南
-- [x] Docker 部署指南
-- [x] 一键部署脚本
-- **文档**: `QUICKSTART.md`, `DEPLOYMENT_PACKAGE.md`
+## 🚀 快速开始
 
----
+### 前置要求
 
-## 📦 最终交付物清单
+- GitHub 账号
+- 邮箱账号（QQ邮箱或163邮箱）
 
-### 核心代码文件 (15个)
+### 部署步骤
 
-```
-✅ config/
-   ├── __init__.py
-   └── config_loader.py              (180+ 行) - 配置加载器
+#### 1. Fork 本仓库
 
-✅ notifications/
-   ├── __init__.py
-   └── email_notifier.py             (370+ 行) - 邮件通知器
+点击右上角的 `Fork` 按钮，将项目复制到你的 GitHub 账号下。
 
-✅ alerts/
-   └── extreme_price_alert.py        (400+ 行) - 极值提醒
+#### 2. 配置 GitHub Secrets
 
-✅ database/
-   └── db_manager.py                 - 数据库管理
+进入你的仓库 `Settings` → `Secrets and variables` → `Actions`，添加以下密钥：
 
-✅ scrapers/
-   └── api_scraper.py                - API 抓取
+| 密钥名称 | 说明 | 示例 |
+|---------|------|------|
+| `EMAIL_TYPE` | 邮箱类型 | `qq` 或 `163` |
+| `EMAIL_ADDRESS` | 发件邮箱地址 | `your_email@qq.com` |
+| `APP_PASSWORD` | 邮箱授权码 | `abcdefghijklmnop` |
+| `RECIPIENT_EMAILS` | 收件人邮箱（多个用逗号分隔） | `user1@qq.com,user2@163.com` |
+| `DROP_THRESHOLD_PERCENT` | 下跌提醒阈值（百分比） | `5` |
+| `ENABLE_EMAIL_NOTIFICATION` | 是否启用邮件通知 | `true` |
+| `TEST_MODE` | 测试模式（不发送真实邮件） | `false` |
 
-✅ 脚本文件:
-   ├── main.py                       - 主程序
-   ├── scheduled_monitor.py          (400+ 行) - 定时监控 ⭐
-   ├── email_alert_integration.py    (280+ 行) - 邮件集成
-   ├── test_email_notification.py    (350+ 行) - 邮件测试
-   ├── email_notification_examples.py (400+ 行) - 邮件示例
-   ├── extreme_alert_examples.py     - 极值示例
-   └── test_extreme_alert.py         - 极值测试
-```
+**可选配置**（用于获取更多数据源）：
 
-### 部署脚本 (3个) ⭐
+| 密钥名称 | 说明 | 获取方式 |
+|---------|------|---------|
+| `JUHE_API_KEY` | 官方数据接口密钥 | 注册获取免费额度 |
 
-```
-✅ deploy.bat                        (2.3KB) - Windows 一键部署
-✅ deploy.sh                         (2.2KB) - Linux/Mac 一键部署
-✅ run_monitor.bat                   - Windows 监控启动脚本
-```
+#### 3. 获取邮箱授权码
 
-### 配置文件 (2个)
+<details>
+<summary>QQ邮箱授权码获取方法</summary>
 
-```
-✅ .env.example                      (70+ 行) - 配置模板
-✅ requirements.txt                  - 依赖包列表
-```
+1. 登录 [QQ邮箱网页版](https://mail.qq.com/)
+2. 点击 `设置` → `账户`
+3. 找到 `POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务`
+4. 开启 `IMAP/SMTP服务`
+5. 点击 `生成授权码`，按提示操作
+6. 复制生成的授权码（16位字符）
 
-### 文档文件 (18个) ⭐
+</details>
 
-```
-✅ QUICKSTART.md                     (5.7KB) - 快速开始指南 ⭐
-✅ DEPLOYMENT_PACKAGE.md            (500+ 行) - 完整部署指南
-✅ SYSTEM_ENHANCEMENT_GUIDE.md       (600+ 行) - 系统完善指南
-✅ EMAIL_NOTIFICATION_GUIDE.md       (500+ 行) - 邮件完整指南
-✅ EMAIL_NOTIFICATION_QUICKREF.md    (200+ 行) - 邮件快速参考
-✅ EMAIL_NOTIFICATION_COMPLETION.md  (300+ 行) - 邮件完成总结
-✅ EMAIL_NOTIFICATION_IMPLEMENTATION_SUMMARY.md (400+ 行)
-✅ PROJECT_COMPLETION_SUMMARY.md     (400+ 行) - 项目总结
-✅ FINAL_PROJECT_REPORT.md           (400+ 行) - 最终报告
-✅ FINAL_SUMMARY.md                  (500+ 行) - 最终总结
-✅ PROJECT_COMPLETION_REPORT.md      (400+ 行) - 完成报告
-✅ README_EXTREME_ALERT.md           - 极值说明
-✅ EXTREME_ALERT_GUIDE.md            - 极值指南
-✅ EXTREME_ALERT_QUICKSTART.md       - 极值快速开始
-✅ EXTREME_ALERT_QUICK_REFERENCE.md  - 极值快速参考
-✅ EXTREME_ALERT_INTEGRATION.md      - 极值集成指南
-✅ EXTREME_ALERT_VERIFICATION_REPORT.md - 极值验证报告
-✅ EXTREME_ALERT_FINAL_SUMMARY.md    - 极值最终总结
-```
+<details>
+<summary>163邮箱授权码获取方法</summary>
 
-**总计: 40+ 个文件，5000+ 行代码，20000+ 字文档**
+1. 登录 [163邮箱网页版](https://mail.163.com/)
+2. 点击 `设置` → `POP3/SMTP/IMAP`
+3. 开启 `IMAP/SMTP服务`
+4. 点击 `客户端授权密码`
+5. 按提示发送短信验证
+6. 复制生成的授权码
 
----
+</details>
 
-## 🚀 立即开始 (3 步)
+#### 4. 启用 GitHub Actions
 
-### 第一步: 运行部署脚本
+1. 进入你的仓库 `Actions` 标签页
+2. 点击 `I understand my workflows, go ahead and enable them`
+3. 系统将自动开始监控（每30分钟运行一次）
 
-**Windows**:
-```batch
-cd F:\航海\積存金
-deploy.bat
+#### 5. 手动测试（可选）
+
+进入 `Actions` → `积存金价格监控` → `Run workflow`，可以手动触发一次运行来测试配置是否正确。
+
+## 📧 邮件提醒示例
+
+当金价满足以下任一条件时，系统会发送邮件提醒：
+
+1. **当前价格是24小时最低价**
+2. **价格从最高点下跌超过设定阈值**（默认5%）
+3. **24小时价格波动幅度超过2%**
+
+邮件内容包括：
+- 📊 当前金价及24小时价格趋势
+- 🏦 6家银行投资金条价格对比
+- 💍 11家品牌金店价格（周大福、老凤祥等）
+- ♻️ 10种黄金回收价格
+- 📈 价格分析与投资建议
+
+## ⚙️ 高级配置
+
+### 调整监控频率
+
+编辑 `.github/workflows/gold-monitor.yml` 文件中的 cron 表达式：
+
+```yaml
+schedule:
+  - cron: '*/30 * * * *'  # 每30分钟运行一次
 ```
 
-**Linux/Mac**:
-```bash
-cd /path/to/project
-chmod +x deploy.sh
-./deploy.sh
+常用频率参考：
+- 每15分钟：`*/15 * * * *`
+- 每小时：`0 * * * *`
+- 每天早上9点：`0 9 * * *`
+
+### 自定义提醒阈值
+
+修改 `DROP_THRESHOLD_PERCENT` 密钥的值：
+- `3`：价格下跌3%时提醒（更敏感）
+- `5`：价格下跌5%时提醒（默认）
+- `10`：价格下跌10%时提醒（更保守）
+
+## 📁 项目结构
+
 ```
-
-### 第二步: 配置邮箱信息
-
-编辑 `.env` 文件：
-
-```env
-EMAIL_TYPE=qq
-EMAIL_ADDRESS=your_email@qq.com
-APP_PASSWORD=your_app_password_here
-RECIPIENT_EMAILS=recipient@qq.com
+积存金/
+├── api/                          # API接口模块
+│   ├── juhe_gold_api.py         # 官方数据接口
+│   └── xiaoxiao_gold_api.py     # 银行金价接口
+├── config/                       # 配置模块
+│   └── config_loader.py         # 配置加载器
+├── notifications/                # 通知模块
+│   └── enhanced_email_notifier.py  # 邮件通知器
+├── .github/workflows/           # GitHub Actions工作流
+│   └── gold-monitor.yml         # 监控任务配置
+├── run_once.py                  # 主程序入口
+├── requirements.txt             # Python依赖
+└── README.md                    # 项目文档
 ```
-
-### 第三步: 启动监控
-
-```bash
-# 直接运行（演示）
-python scheduled_monitor.py
-
-# 或设置定时任务（生产环境）
-# Windows: 使用任务计划程序
-# Linux: 使用 cron
-# Docker: docker-compose up -d
-```
-
----
-
-## 📊 项目统计
-
-| 指标 | 数值 |
-|------|------|
-| 核心模块 | 5 个 |
-| 脚本文件 | 7 个 |
-| 部署脚本 | 3 个 |
-| 配置文件 | 2 个 |
-| 文档文件 | 18 个 |
-| 初始化文件 | 2 个 |
-| **总文件数** | **40+ 个** |
-| **代码行数** | **5000+ 行** |
-| **文档字数** | **20000+ 字** |
-| **代码示例** | **50+ 个** |
-| **测试用例** | **16 个** |
-| **示例演示** | **12 个** |
-| **测试通过率** | **100%** ✅ |
-
----
-
-## ✨ 核心功能
-
-### 1. 邮件通知系统 ✅
-- SMTP 邮件发送 (QQ/163 邮箱)
-- 专业 HTML 邮件模板
-- 多收件人支持
-- 批量发送功能
-
-### 2. 定时运行系统 ✅
-- 每 10 分钟自动运行
-- 多种部署方式支持
-- 完整的日志记录
-- 错误恢复机制
-
-### 3. 防封策略 ✅
-- 随机 User-Agent
-- 随机延时
-- IP 轮换支持
-- 请求头配置
-
-### 4. 异常处理 ✅
-- 完整的日志记录
-- 错误恢复机制
-- 重试策略
-- 性能监控
-
-### 5. 极值提醒系统 ✅
-- 24 小时极值计算
-- 价格差值计算
-- 智能触发判断
-- 可配置阈值
-
-### 6. 数据存储系统 ✅
-- SQLite 数据库
-- 数据查询功能
-- 数据统计分析
-- 数据清理维护
-
----
-
-## 📚 文档导航
-
-### 快速开始 (5 分钟)
-1. **QUICKSTART.md** ⭐ - 3 步快速部署
-2. **DEPLOYMENT_PACKAGE.md** - 完整部署指南
-
-### 详细指南 (30 分钟)
-1. **SYSTEM_ENHANCEMENT_GUIDE.md** - 定时运行、防封、异常处理
-2. **EMAIL_NOTIFICATION_GUIDE.md** - 邮件系统完整指南
-
-### 快速参考 (10 分钟)
-1. **EMAIL_NOTIFICATION_QUICKREF.md** - 快速参考
-2. **README_EXTREME_ALERT.md** - 极值提醒说明
-
-### 项目总结 (15 分钟)
-1. **PROJECT_COMPLETION_REPORT.md** - 完成报告
-2. **FINAL_SUMMARY.md** - 最终总结
-
----
-
-## 💻 核心代码示例
-
-### 初始化系统
-```python
-from email_alert_integration import EmailAlertIntegration
-
-integration = EmailAlertIntegration('.env')
-```
-
-### 发送邮件
-```python
-# 单个提醒
-results = integration.send_alert_emails(alert_result)
-
-# 批量提醒
-all_results = integration.send_batch_alerts(alert_results)
-```
-
-### 定时运行
-```python
-from scheduled_monitor import ScheduledMonitor
-
-monitor = ScheduledMonitor('.env', check_interval=600)
-monitor.run()
-```
-
-### 测试连接
-```python
-if integration.test_email_connection():
-    print("✓ 连接成功！")
-```
-
----
-
-## 🎯 部署方案对比
-
-| 方案 | 难度 | 时间 | 推荐场景 |
-|------|------|------|---------|
-| 一键部署脚本 | ⭐ | 5 分钟 | 快速开始 ⭐ |
-| 手动部署 | ⭐⭐ | 10 分钟 | 学习过程 |
-| Windows 任务计划 | ⭐⭐ | 15 分钟 | Windows 服务器 |
-| Linux cron | ⭐⭐ | 15 分钟 | Linux 服务器 |
-| Docker 部署 | ⭐⭐⭐ | 20 分钟 | 云服务器 |
-| systemd 服务 | ⭐⭐⭐ | 20 分钟 | Linux 生产环境 |
-
----
-
-## ✅ 验证清单
-
-### 部署前
-- [ ] Python 3.7+ 已安装
-- [ ] 网络连接正常
-- [ ] 邮箱账号已准备
-- [ ] 授权码已获取
-
-### 部署中
-- [ ] 虚拟环境已创建
-- [ ] 依赖包已安装
-- [ ] .env 文件已配置
-- [ ] 测试脚本已运行
-
-### 部署后
-- [ ] 定时任务已创建
-- [ ] 监控脚本已启动
-- [ ] 日志文件已生成
-- [ ] 邮件已正常发送
-
-### 定期维护
-- [ ] 每周检查日志
-- [ ] 每月清理旧日志
-- [ ] 每季度更新依赖
-- [ ] 每半年审查配置
-
----
-
-## 🎓 学习路径
-
-### 5 分钟快速了解
-```bash
-# 阅读快速开始指南
-cat QUICKSTART.md
-
-# 运行部署脚本
-deploy.bat  # Windows
-./deploy.sh # Linux/Mac
-```
-
-### 15 分钟深入学习
-1. 阅读 DEPLOYMENT_PACKAGE.md
-2. 运行 `python test_email_notification.py`
-3. 查看示例代码
-
-### 30 分钟完全掌握
-1. 阅读 EMAIL_NOTIFICATION_GUIDE.md
-2. 运行 `python email_notification_examples.py`
-3. 查看源代码注释
-
-### 1 小时高级应用
-1. 阅读 SYSTEM_ENHANCEMENT_GUIDE.md
-2. 自定义邮件模板
-3. 集成到主系统
-
----
 
 ## 🔧 故障排查
 
-### 问题 1: 部署脚本无法运行
+### 问题1：没有收到邮件
 
-**症状**: 执行 deploy.bat 或 deploy.sh 时出错
+**可能原因**：
+- 邮箱授权码配置错误
+- 金价未触发提醒条件
+- 邮件被拦截进入垃圾箱
 
-**解决方案**:
-1. 检查 Python 是否已安装
-2. 检查文件权限 (Linux/Mac)
-3. 查看错误信息
-4. 手动执行部署步骤
+**解决方法**：
+1. 检查 GitHub Secrets 中的邮箱配置是否正确
+2. 手动触发 workflow 并设置 `force_alert` 为 `true` 进行测试
+3. 检查邮箱的垃圾邮件文件夹
 
-### 问题 2: 邮件发送失败
+### 问题2：GitHub Actions 运行失败
 
-**症状**: 日志显示邮件发送失败
+**可能原因**：
+- API密钥配置错误或已过期
+- 网络连接问题
 
-**解决方案**:
-1. 检查 .env 文件配置
-2. 验证邮箱授权码
-3. 检查网络连接
-4. 查看详细错误日志
+**解决方法**：
+1. 查看 Actions 运行日志，定位具体错误
+2. 检查所有 Secrets 配置是否完整
+3. 等待几分钟后重试（可能是临时网络问题）
 
-### 问题 3: 定时任务不执行
+### 问题3：数据不完整
 
-**症状**: 任务计划中显示已创建，但没有执行
+**可能原因**：
+- 某些数据源暂时不可用
+- API配额已用完
 
-**解决方案**:
-1. 检查任务计划程序历史记录
-2. 验证脚本路径是否正确
-3. 检查用户权限
-4. 查看日志文件
+**解决方法**：
+- 系统会自动使用备用数据源
+- 检查是否配置了可选的API密钥
+- 等待下一次运行周期
 
----
+## 🤝 贡献指南
 
-## 📞 获取帮助
+欢迎提交 Issue 和 Pull Request！
 
-### 查看日志
-```bash
-tail -f logs/scheduled_monitor.log
-```
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
 
-### 运行测试
-```bash
-python test_email_notification.py
-```
+## 📄 开源协议
 
-### 查看示例
-```bash
-python email_notification_examples.py
-```
+本项目采用 MIT 协议开源，详见 [LICENSE](LICENSE) 文件。
 
-### 查看配置
-```bash
-cat .env
-```
+## 🙏 致谢
 
----
+- 感谢 GitHub Actions 提供的免费自动化服务
+- 感谢各数据源提供的权威金价数据
+- 感谢所有贡献者的支持
 
-## 🎯 下一步行动
+## 📮 联系方式
 
-### 立即行动 (今天)
-1. [ ] 运行部署脚本
-2. [ ] 配置邮箱信息
-3. [ ] 运行测试脚本
-4. [ ] 启动监控系统
+如有问题或建议，欢迎通过以下方式联系：
 
-### 短期行动 (本周)
-1. [ ] 监控系统运行状态
-2. [ ] 检查日志文件
-3. [ ] 验证邮件发送
-4. [ ] 调整配置参数
-
-### 中期行动 (本月)
-1. [ ] 优化系统性能
-2. [ ] 添加更多监控指标
-3. [ ] 实现数据分析
-4. [ ] 创建仪表板
-
-### 长期行动 (持续)
-1. [ ] 定期维护和更新
-2. [ ] 监控系统健康状态
-3. [ ] 收集用户反馈
-4. [ ] 持续改进
+- 提交 [GitHub Issue](../../issues)
+- 发送邮件至项目维护者
 
 ---
 
-## 🎉 项目完成
-
-**金价自动化监控与提醒系统已完成！**
-
-✅ **所有需求已实现**
-✅ **所有功能已测试**
-✅ **所有文档已完成**
-✅ **系统已可投入使用**
-
----
-
-## 📊 最终统计
-
-| 指标 | 数值 |
-|------|------|
-| 总文件数 | 40+ 个 |
-| 代码行数 | 5000+ 行 |
-| 文档字数 | 20000+ 字 |
-| 代码示例 | 50+ 个 |
-| 测试用例 | 16 个 |
-| 示例演示 | 12 个 |
-| 测试通过率 | 100% ✅ |
-| 部署时间 | 5 分钟 ⭐ |
-| 文档完整度 | 100% ✅ |
-
----
-
-## 🚀 立即开始
-
-```bash
-# Windows
-cd F:\航海\積存金
-deploy.bat
-
-# Linux/Mac
-cd /path/to/project
-chmod +x deploy.sh
-./deploy.sh
-```
-
----
-
-**系统已准备就绪，立即开始部署！** 🚀
-
-**项目版本**: 2.0.0
-**完成日期**: 2024-01-15
-**项目状态**: ✅ 完成并可立即部署
-
----
-
-感谢使用金价自动化监控与提醒系统！🙏
-"""
+⭐ 如果这个项目对你有帮助，欢迎点个 Star！
