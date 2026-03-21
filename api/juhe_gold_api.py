@@ -110,21 +110,6 @@ class JuheGoldAPI:
 
         self.logger.warning("✗ 上海期货交易所: 数据获取失败")
         return None
-        if result and isinstance(result, list) and len(result) > 0:
-            # 聚合数据返回的是一个包含字典的列表，字典的key是数字
-            futures_list = []
-            first_item = result[0]
-            if isinstance(first_item, dict):
-                for key, value in first_item.items():
-                    if isinstance(value, dict):
-                        futures_list.append(value)
-
-            if futures_list:
-                self.logger.info(f"✓ 上海期货交易所: 获取 {len(futures_list)} 个合约")
-                return futures_list
-
-        self.logger.warning("✗ 上海期货交易所: 数据获取失败")
-        return None
 
     def fetch_all_gold_prices(self) -> Dict[str, Any]:
         """
