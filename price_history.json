@@ -2,11 +2,6 @@
   {
     "price": 1048.0,
     "source": "juhe-api",
-    "timestamp": "2026-04-12T05:35:48.714942"
-  },
-  {
-    "price": 1048.0,
-    "source": "juhe-api",
     "timestamp": "2026-04-12T07:23:57.509466"
   },
   {
@@ -238,5 +233,10 @@
     "price": 1058.31,
     "source": "juhe-api",
     "timestamp": "2026-04-15T03:23:31.655716"
+  },
+  {
+    "price": 1059.0,
+    "source": "juhe-api",
+    "timestamp": "2026-04-15T05:36:35.000086"
   }
 ]
